@@ -28,8 +28,10 @@ public class Broadcaster {
 			
 			/* Send data to the ServerSocket */
 			ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
+			ObjectInputStream ois = new ObjectInputStream(client.getInputStream());
 			oos.writeObject(message);
 			oos.close();
+			ois.close();
 			
 			client.close();
 		}

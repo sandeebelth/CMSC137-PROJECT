@@ -16,20 +16,23 @@ public class Receiver extends Thread {
 	}
 
 	public void run() {
+		//System.out.println("Receiver Start!");
 		while(true) {
 			Socket server;
 			try {
 				server = serverSocket.accept();
+				//System.out.println("Receiver Accept!");
 
 				/* Read data from the ClientSocket */
 				ObjectInputStream ois = new ObjectInputStream(server.getInputStream());
 				ObjectOutputStream oos = new ObjectOutputStream(server.getOutputStream());
 				Message sendMessage;
-				while(true) {
-					sendMessage = receive.receive((Message)ois.readObject());
-					if(sendMessage == null) {
-						break;
-					}
+				//System.out.println("Receiver Message Wait!");
+				Message receivedMessage = (Message)ois.readObject();
+				sendMessage = receive.receive(receivedMessage);
+				//System.out.println("Received Message!");
+				if(sendMessage != null) {
+					//System.out.println("Receiver Message!");
 
 					oos.writeObject(sendMessage);
 				}
@@ -41,12 +44,18 @@ public class Receiver extends Thread {
 				System.err.println("Socket timed out!");
 				break;
 			}catch(IOException e) {
-				//e.printStackTrace();
+				e.printStackTrace();
 				System.out.println("Usage: java GreetingServer <port no.>");
 				break;
 			} catch(ClassNotFoundException e) {
 				System.err.println("Error: class not found");
 			}
+			//System.out.println("Looping!!!");
 		} 
+		//System.out.println("Exiting!!!");
+	}
+
+	public InetAddress getInetAddress() {
+		return serverSocket.getInetAddress();
 	}
 }
