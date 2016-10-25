@@ -18,10 +18,22 @@ public class ClientReceive {
 		random = new Random();
 	}
 	public Message receive(Message message) {
-		switch(message.getToName()) {
-			case "#ADD":
-				addUserProtocol(message);
-				break;
+		try {
+			switch(message.getToName()) {
+				case "#ADD":
+					addUserProtocol(message);
+					break;
+				case "#ALL":
+					broadcaster.broadcast(message);
+					break;
+			}
+		} catch(IOException e) {
+			//TODO Fix error
+			System.out.println("Cannot find Server");
+			return new Message("Unable to send message", "System", message.getFromName(), 0);
+		} catch(ClassNotFoundException e) {
+			System.out.println("Cant find class");
+			return new Message("Error in server", "System", message.getFromName(), 0);
 		}
 		return null;
 	}
@@ -41,7 +53,9 @@ public class ClientReceive {
 		}
 
 		int key = random.nextInt();
-		userList.put(message.getFromName(), new Client(message.getFromName(), key, new InetSocketAddress(message.getTextMessage(), message.getKey())));
+		InetSocketAddress userAddress = new InetSocketAddress(message.getTextMessage(), message.getKey());
+		userList.put(message.getFromName(), new Client(message.getFromName(), key, userAddress));
+		broadcaster.addAddress(userAddress);
 		return new Message("Successfully added to users", "System", message.getFromName(), key);
 	}
 }
