@@ -1,4 +1,4 @@
-package chat.client;
+package chat;
 
 import java.net.*;
 import java.io.*;
@@ -7,12 +7,12 @@ import chat.Message;
 
 public class Receiver extends Thread {
 	private ServerSocket serverSocket;
-	private OutputStrategy out;
+	private ReceiveStrategy receive;
 	
-	public Receiver(int port, OutputStrategy out) throws IOException {
+	public Receiver(int port, ReceiveStrategy receive) throws IOException {
 		serverSocket = new ServerSocket(port);
 		serverSocket.setSoTimeout(0);
-		this.out = out;
+		this.receive = receive;
 	}
 
 	public void run() {
@@ -23,7 +23,18 @@ public class Receiver extends Thread {
 
 				/* Read data from the ClientSocket */
 				ObjectInputStream ois = new ObjectInputStream(server.getInputStream());
-				out.print((Message)ois.readObject());
+				ObjectOutputStream oos = new ObjectOutputStream(server.getOutputStream());
+				Message sendMessage;
+				while(true) {
+					sendMessage = receive.receive((Message)ois.readObject());
+					if(sendMessage == null) {
+						break;
+					}
+
+					oos.writeObject(sendMessage);
+				}
+				oos.close();
+				ois.close();
 				
 				server.close();
 			}catch(SocketTimeoutException s) {

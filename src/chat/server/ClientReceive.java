@@ -1,0 +1,47 @@
+package chat.server;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Random;
+
+import chat.ReceiveStrategy;
+import chat.Message;
+import chat.Sender;
+
+public class ClientReceive {
+	private Broadcaster broadcaster;
+	private HashMap<String, Client> userList;
+	private Random random;
+	public ClientReceive() {
+		broadcaster = new Broadcaster();
+		random = new Random();
+	}
+	public Message receive(Message message) {
+		switch(message.getToName()) {
+			case "#ADD":
+				addUserProtocol(message);
+				break;
+		}
+		return null;
+	}
+	private Message addUserProtocol(Message message) {
+		if (userList.containsKey(message.getFromName())) {
+			return new Message("Taken Username", "System", message.getFromName(), 0);
+		}
+
+		try {
+			Sender.send(message.getTextMessage(), message.getKey(), new Message("TEST", "#SYS", "#SYS", 0));
+		} catch(IOException e) {
+			System.out.println("Cannot find Server");
+			return new Message("Invalid Receive Address", "System", message.getFromName(), 0);
+		} catch(ClassNotFoundException e) {
+			System.out.println("Cant find class");
+			return new Message("Error in server", "System", message.getFromName(), 0);
+		}
+
+		int key = random.nextInt();
+		userList.put(message.getFromName(), new Client(message.getFromName(), key, new InetSocketAddress(message.getTextMessage(), message.getKey())));
+		return new Message("Successfully added to users", "System", message.getFromName(), key);
+	}
+}

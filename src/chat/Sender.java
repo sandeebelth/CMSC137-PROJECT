@@ -1,4 +1,4 @@
-package chat.client;
+package chat;
 
 import java.net.*;
 import java.io.*;
@@ -16,8 +16,11 @@ public class Sender {
 	}
 
 	public void send(Message message) throws IOException, ClassNotFoundException {
-		//insert missing line here for creating a new socket for client and binding it to a port
-		Socket client = new Socket(chatServerName, chatServerPort); 
+		send(chatServerName, chatServerPort, message);
+	}
+
+	public static void send(String address, int port, Message message) throws IOException, ClassNotFoundException {
+		Socket client = new Socket(address, port); 
 		
 		/* Send data to the ServerSocket */
 		ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
