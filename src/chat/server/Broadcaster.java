@@ -22,6 +22,10 @@ public class Broadcaster {
 		chatters.add(address);
 	}
 
+	public void removeAddress(InetSocketAddress address) {
+		chatters.remove(address);
+	}
+
 	public static void broadcast(LinkedList<InetSocketAddress> chatters, Message message) throws IOException, ClassNotFoundException {
 		for(InetSocketAddress address: chatters) {
 			Socket client = new Socket(address.getAddress(), address.getPort()); 

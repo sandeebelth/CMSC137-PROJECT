@@ -12,7 +12,7 @@ import chat.server.Client;
 public class CLI {
 	private static String username;
 	private static int key;
-	private static void connectToServer(InetSocketAddress serverAddress, InetSocketAddress userAddress) throws IOException, ClassNotFoundException {
+	private static boolean connectToServer(InetSocketAddress serverAddress, InetSocketAddress userAddress) throws IOException, ClassNotFoundException {
 		System.out.println(serverAddress);
 		Scanner stdin = new Scanner(System.in);
 		System.out.println("Enter name: ");
@@ -27,17 +27,40 @@ public class CLI {
 		ObjectInputStream ois = new ObjectInputStream(client.getInputStream());
 		oos.writeObject(message);
 
-		System.out.println("hi");
 		Message reply = (Message)ois.readObject();
-		System.out.println(reply.getTextMessage());
+		System.out.println("'" + reply.getTextMessage() + "'");
+
 		
 		System.out.println("bye");
 		oos.close();
 		ois.close();
 		client.close();
 
+		if (!reply.getTextMessage().equals("Successfully added to users")) {
+			return false;
+		}
+
 		username = name;
 		key = reply.getKey();
+		return true;
+	}
+
+	private static void logout(InetSocketAddress serverAddress) throws IOException, ClassNotFoundException {
+		Message message = new Message("Logging out", username, "#LOGOUT", key);
+		Socket client = new Socket(serverAddress.getAddress(), serverAddress.getPort()); 
+
+		/* Send data to the ServerSocket */
+		ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
+		ObjectInputStream ois = new ObjectInputStream(client.getInputStream());
+		oos.writeObject(message);
+
+		System.out.println("hi");
+		Message reply = (Message)ois.readObject();
+		System.out.println(reply.getTextMessage());
+		
+		oos.close();
+		ois.close();
+		client.close();
 	}
 	public static void main(String [] args) {
 		try {
@@ -47,21 +70,26 @@ public class CLI {
 			Receiver receiver = new Receiver(port2, new PrintReceive());
 			receiver.start();
 			Sender sender = new Sender(serverName, port);
-			connectToServer(new InetSocketAddress(serverName, port), new InetSocketAddress(receiver.getInetAddress(), port2));
-
 
 			Scanner stdin = new Scanner(System.in);
 
-			System.out.print("System: enter your message\nYou: ");
-			String text;
-			Message message;
-			while(stdin.hasNextLine()) {
-				text = stdin.nextLine();
-				message = new Message(text, username, "#ALL", key);
-				sender.send(message);
+			if (connectToServer(new InetSocketAddress(serverName, port), new InetSocketAddress(receiver.getInetAddress(), port2))) {
+				System.out.print("System: enter your message\n" + username + ": ");
+				String text;
+				Message message;
+				while(stdin.hasNextLine()) {
+					text = stdin.nextLine();
+					message = new Message(text, username, "#ALL", key);
+					sender.send(message);
 
-				System.out.print("You: ");
+					System.out.print("You: ");
+				}
+
+
+				logout(new InetSocketAddress(serverName, port));
 			}
+			receiver.close();
+
 
 		}catch(IOException e) {
 			e.printStackTrace();
@@ -72,5 +100,7 @@ public class CLI {
 		} catch(ClassNotFoundException e) {
 			System.out.println("Cant find class");
 		}
+		System.out.println("bye");
+		return;
 	}
 }

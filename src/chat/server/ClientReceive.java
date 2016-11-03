@@ -27,6 +27,8 @@ public class ClientReceive implements ReceiveStrategy {
 				case "#ALL":
 					broadcaster.broadcast(message);
 					break;
+				case "#LOGOUT":
+					return removeUser(message);
 			}
 		} catch(IOException e) {
 			//TODO Fix error
@@ -39,6 +41,19 @@ public class ClientReceive implements ReceiveStrategy {
 		System.out.println("Done message!");
 		return null;
 	}
+
+	private Message removeUser(Message message) throws IOException, ClassNotFoundException {
+		Client user = userList.get(message.getFromName());
+		if (user == null || user.getKey() != message.getKey()) {
+			return new Message("Invalid Credentials", "System", message.getFromName(), 0);
+		}
+		
+		broadcaster.removeAddress(user.getReceiverAddress());
+		broadcaster.broadcast(new Message(message.getFromName() + "Logged out", "System", "#ALL", 0));
+		userList.remove(message.getFromName());
+		return new Message("Successfully logged out", "System", message.getFromName(), 0);
+	}
+
 	private Message addUserProtocol(Message message) {
 		if (userList.containsKey(message.getFromName())) {
 			return new Message("Taken Username", "System", message.getFromName(), 0);

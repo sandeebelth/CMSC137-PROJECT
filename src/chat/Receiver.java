@@ -8,6 +8,7 @@ import chat.Message;
 public class Receiver extends Thread {
 	private ServerSocket serverSocket;
 	private ReceiveStrategy receive;
+	private boolean isOpen = true;
 	
 	public Receiver(int port, ReceiveStrategy receive) throws IOException {
 		serverSocket = new ServerSocket(port);
@@ -44,8 +45,10 @@ public class Receiver extends Thread {
 				System.err.println("Socket timed out!");
 				break;
 			}catch(IOException e) {
-				e.printStackTrace();
-				System.out.println("Usage: java GreetingServer <port no.>");
+				if (isOpen) {
+					e.printStackTrace();
+					System.out.println("Usage: java GreetingServer <port no.>");
+				}
 				break;
 			} catch(ClassNotFoundException e) {
 				System.err.println("Error: class not found");
@@ -53,6 +56,11 @@ public class Receiver extends Thread {
 			//System.out.println("Looping!!!");
 		} 
 		//System.out.println("Exiting!!!");
+	}
+
+	public void close() throws IOException {
+		serverSocket.close();
+		isOpen = false;
 	}
 
 	public InetAddress getInetAddress() {
