@@ -2,13 +2,14 @@ package game.components;
 
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
+import org.newdawn.slick.tiled.Layer;
 import org.newdawn.slick.tiled.TiledMap;
-import org.newdawn.slick.util.Log;
 
 import java.util.ArrayList;
 
 public class Map extends TiledMap {
     private ArrayList<Rectangle> blocks = new ArrayList<>();
+    private int upperLayerStart = 0;
 
     public Map(String ref) throws SlickException {
         super(ref);
@@ -33,9 +34,46 @@ public class Map extends TiledMap {
         }
 
         layers.remove(collisionLayer);
+        int size = layers.size();
+        if (size >= 2) {
+            upperLayerStart = 2;
+        } else {
+            upperLayerStart = -1;
+        }
     }
 
     public ArrayList<Rectangle> getCollisions() {
         return blocks;
+    }
+
+    public void renderBottom(int x, int y) {
+        int layerEnd;
+        if (upperLayerStart < 0) {
+            layerEnd = layers.size();
+        } else {
+            layerEnd = upperLayerStart;
+        }
+
+        for (int ty = 0; ty < height; ty++) {
+            for (int i = 0; i < layerEnd; i++) {
+                Layer layer = (Layer) layers.get(i);
+                layer.render(x, y, 0, 0, width, ty, false,
+                        tileWidth, tileHeight);
+            }
+        }
+    }
+
+    public void renderUpper(int x, int y) {
+        if (upperLayerStart < 0) {
+            return;
+        }
+
+        for (int ty = 0; ty < height; ty++) {
+            for (int i = upperLayerStart; i < layers.size(); i++) {
+                Layer layer = (Layer) layers.get(i);
+                layer.render(x, y, 0, 0, width, ty, false,
+                        tileWidth, tileHeight);
+            }
+        }
     }
 }
