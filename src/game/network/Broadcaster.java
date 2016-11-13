@@ -17,16 +17,12 @@ public class Broadcaster {
         chatters = new ArrayList<>();
     }
 
+    public Broadcaster(ArrayList<InetSocketAddress> userList) {
+        this.chatters = userList;
+    }
+
     public void broadcast(Action action) throws IOException, ClassNotFoundException {
         broadcast(this.chatters, action);
-    }
-
-    public void addAddress(InetSocketAddress address) {
-        chatters.add(address);
-    }
-
-    public void removeAddress(InetSocketAddress address) {
-        chatters.remove(address);
     }
 
     public static void broadcast(ArrayList<InetSocketAddress> chatters, Action action) throws IOException, ClassNotFoundException {

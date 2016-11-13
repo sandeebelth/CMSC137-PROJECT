@@ -7,10 +7,10 @@ public class Action implements Serializable {
     private int key;
     private String affectedName;
     private ActionType actionType;
-    private int value1;
-    private int value2;
+    private float value1;
+    private float value2;
 
-    public Action(String fromName, int key, String affectedName, ActionType actionType, int value1, int value2) {
+    public Action(String fromName, int key, String affectedName, ActionType actionType, float value1, float value2) {
         this.fromName = fromName;
         this.key = key;
         this.affectedName = affectedName;
@@ -35,11 +35,11 @@ public class Action implements Serializable {
         return actionType;
     }
 
-    public int getValue1() {
+    public float getValue1() {
         return value1;
     }
 
-    public int getValue2() {
+    public float getValue2() {
         return value2;
     }
 }

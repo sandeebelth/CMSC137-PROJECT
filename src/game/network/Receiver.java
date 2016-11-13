@@ -20,7 +20,6 @@ public class Receiver extends Thread {
         try {
             while (true) {
                 DatagramSocket socket = new DatagramSocket(port);
-                System.out.println("Waiting for time requests...");
 
                 byte buffer[] = new byte[4096];
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);

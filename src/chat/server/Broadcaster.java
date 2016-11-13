@@ -1,32 +1,39 @@
 package chat.server;
 
-import java.net.*;
-import java.io.*;
-import java.util.Scanner;
-import java.util.LinkedList;
-
 import chat.Message;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+
 public class Broadcaster {
-	private LinkedList<InetSocketAddress> chatters;
+	private ArrayList<InetSocketAddress> userList;
 
 	public Broadcaster() {
-		chatters = new LinkedList<InetSocketAddress>();
+		userList = new ArrayList<>();
 	}
 
 	public void broadcast(Message message) throws IOException, ClassNotFoundException {
-		broadcast(this.chatters, message);
+		broadcast(this.userList, message);
 	}
 
 	public void addAddress(InetSocketAddress address) {
-		chatters.add(address);
+		userList.add(address);
 	}
 
 	public void removeAddress(InetSocketAddress address) {
-		chatters.remove(address);
+		userList.remove(address);
 	}
 
-	public static void broadcast(LinkedList<InetSocketAddress> chatters, Message message) throws IOException, ClassNotFoundException {
+	public ArrayList<InetSocketAddress> getUserList() {
+        return userList;
+    }
+
+	public static void broadcast(List<InetSocketAddress> chatters, Message message) throws IOException, ClassNotFoundException {
 		for(InetSocketAddress address: chatters) {
 			Socket client = new Socket(address.getAddress(), address.getPort()); 
 			

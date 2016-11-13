@@ -2,12 +2,13 @@ package game.scene;
 
 
 import game.components.Map;
+import game.network.GameClient;
 import game.network.GameServer;
-import game.network.Sender;
 import org.newdawn.slick.*;
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.geom.ShapeRenderer;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -31,11 +32,11 @@ public class MainGame extends BasicGame {
     private float playerX, playerY;
     private float centerX, centerY;
 
-    private Sender sender;
+    private GameClient gameClient;
 
-    private MainGame(String gameName, Sender sender) {
+    private MainGame(String gameName, InetSocketAddress serverAddress, int clientPort) throws IOException, ClassNotFoundException {
         super(gameName);
-        this.sender = sender;
+        gameClient = new GameClient(serverAddress, clientPort, this);
     }
 
     private void movePlayer(float x, float y) {
@@ -103,11 +104,12 @@ public class MainGame extends BasicGame {
             }
         }
 
-        if (!isInCollision && (dX <= 0.1f && dX >= -0.1f) && (dY <= 0.1f && dY >= 0.1f)) {
+        if (!isInCollision && ((dX <= -0.1f || dX >= 0.1f) || (dY <= -0.1f || dY >= 0.1f))) {
             x += dX;
             y += dY;
             playerX -= dX;
             playerY -= dY;
+            gameClient.move(playerX, playerY);
         }
         //Log.debug(" X: " + playerX + " Y: " + playerY);
     }
@@ -126,16 +128,16 @@ public class MainGame extends BasicGame {
     }
 
     public static void main(String[] args) {
-        if (args.length < 1 || (args[0].equals("gameServer") && args.length < 3) ||
+        if (args.length < 1 || (args[0].equals("server") && args.length < 3) ||
                 (args[0].equals("client") && args.length < 4)) {
-            System.err.println("Usage: java program {gameServer <gameServer port> <client port> | client <gameServer ip> <gameServer port> <client port>");
+            System.err.println("Usage: java program {server <server port> <client port> | client <server ip> <server port> <client port>");
             return;
         }
         GameServer gameServer;
 
         InetSocketAddress serverAddress;
         int clientPort;
-        if(args[0].equals("gameServer")) {
+        if(args[0].equals("server")) {
             gameServer = new GameServer(Integer.parseInt(args[1]));
             serverAddress = new InetSocketAddress("localhost", Integer.parseInt(args[1]));
             clientPort = Integer.parseInt(args[2]);
@@ -146,11 +148,15 @@ public class MainGame extends BasicGame {
 
         try {
             AppGameContainer appgc;
-            appgc = new AppGameContainer(new MainGame("Simple Slick Game", new Sender(serverAddress)));
+            appgc = new AppGameContainer(new MainGame("Simple Slick Game", serverAddress, clientPort));
             appgc.setDisplayMode(640, 480, false);
             appgc.start();
         } catch (SlickException ex) {
             Logger.getLogger(MainGame.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
     }
