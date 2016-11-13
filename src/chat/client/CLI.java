@@ -1,13 +1,15 @@
 package chat.client;
 
-import java.net.*;
-import java.io.*;
-import java.util.Scanner;
-
 import chat.Message;
 import chat.Receiver;
 import chat.Sender;
-import chat.server.Client;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.util.Scanner;
 
 public class CLI {
 	private static String username;
@@ -93,7 +95,7 @@ public class CLI {
 
 		}catch(IOException e) {
 			e.printStackTrace();
-			System.out.println("Cannot find Server");
+			System.out.println("Cannot find GameServer");
 		}catch(ArrayIndexOutOfBoundsException e) {
 			e.printStackTrace();
 			System.out.println("Usage: java GreetingClient <server ip> <port no.> '<your message to the server>'");

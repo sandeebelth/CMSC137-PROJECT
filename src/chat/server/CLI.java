@@ -16,7 +16,7 @@ public class CLI {
 
 		}catch(IOException e) {
 			e.printStackTrace();
-			System.out.println("Cannot find Server");
+			System.out.println("Cannot find GameServer");
 		}catch(ArrayIndexOutOfBoundsException e) {
 			e.printStackTrace();
 			System.out.println("Usage: java command <port no.>");

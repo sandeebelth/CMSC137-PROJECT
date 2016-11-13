@@ -32,7 +32,7 @@ public class ClientReceive implements ReceiveStrategy {
 			}
 		} catch(IOException e) {
 			//TODO Fix error
-			System.out.println("Cannot find Server");
+			System.out.println("Cannot find GameServer");
 			return new Message("Unable to send message", "System", message.getFromName(), 0);
 		} catch(ClassNotFoundException e) {
 			System.out.println("Cant find class");
@@ -62,7 +62,7 @@ public class ClientReceive implements ReceiveStrategy {
 		try {
 			Sender.send(message.getTextMessage(), message.getKey(), new Message("TEST", "#SYS", "#SYS", 0));
 		} catch(IOException e) {
-			System.out.println("Cannot find Server");
+			System.out.println("Cannot find GameServer");
 			return new Message("Invalid Receive Address", "System", message.getFromName(), 0);
 		} catch(ClassNotFoundException e) {
 			System.out.println("Cant find class");

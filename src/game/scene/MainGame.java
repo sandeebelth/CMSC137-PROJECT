@@ -2,10 +2,13 @@ package game.scene;
 
 
 import game.components.Map;
+import game.network.GameServer;
+import game.network.Sender;
 import org.newdawn.slick.*;
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.geom.ShapeRenderer;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,8 +31,11 @@ public class MainGame extends BasicGame {
     private float playerX, playerY;
     private float centerX, centerY;
 
-    private MainGame(String gamename) {
-        super(gamename);
+    private Sender sender;
+
+    private MainGame(String gameName, Sender sender) {
+        super(gameName);
+        this.sender = sender;
     }
 
     private void movePlayer(float x, float y) {
@@ -97,7 +103,7 @@ public class MainGame extends BasicGame {
             }
         }
 
-        if (!isInCollision) {
+        if (!isInCollision && (dX <= 0.1f && dX >= -0.1f) && (dY <= 0.1f && dY >= 0.1f)) {
             x += dX;
             y += dY;
             playerX -= dX;
@@ -120,9 +126,27 @@ public class MainGame extends BasicGame {
     }
 
     public static void main(String[] args) {
+        if (args.length < 1 || (args[0].equals("gameServer") && args.length < 3) ||
+                (args[0].equals("client") && args.length < 4)) {
+            System.err.println("Usage: java program {gameServer <gameServer port> <client port> | client <gameServer ip> <gameServer port> <client port>");
+            return;
+        }
+        GameServer gameServer;
+
+        InetSocketAddress serverAddress;
+        int clientPort;
+        if(args[0].equals("gameServer")) {
+            gameServer = new GameServer(Integer.parseInt(args[1]));
+            serverAddress = new InetSocketAddress("localhost", Integer.parseInt(args[1]));
+            clientPort = Integer.parseInt(args[2]);
+        } else {
+            serverAddress = new InetSocketAddress(args[1], Integer.parseInt(args[2]));
+            clientPort = Integer.parseInt(args[3]);
+        }
+
         try {
             AppGameContainer appgc;
-            appgc = new AppGameContainer(new MainGame("Simple Slick Game"));
+            appgc = new AppGameContainer(new MainGame("Simple Slick Game", new Sender(serverAddress)));
             appgc.setDisplayMode(640, 480, false);
             appgc.start();
         } catch (SlickException ex) {

@@ -2,5 +2,6 @@ package game.components;
 
 public enum ActionType {
     MOVEMENT,
-    DAMAGE
+    DAMAGE,
+    LOGIN
 }
