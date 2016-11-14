@@ -11,21 +11,23 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Scanner;
 
-public class ChatClient {
+public class ChatClient implements chat.ReceiveStrategy {
 	private String username;
 	private int key;
     private InetSocketAddress serverAddress;
     private InetSocketAddress userAddress;
     private Sender sender;
     private Receiver receiver;
+    private NewUserListener newUserListener;
     private boolean connected = false;
 
-	public ChatClient(InetSocketAddress serverAddress, int clientPort)
+	public ChatClient(InetSocketAddress serverAddress, int clientPort, NewUserListener newUserListener)
             throws ClassNotFoundException, IOException {
         this.serverAddress = serverAddress;
-        receiver = new Receiver(clientPort, new PrintReceive());
+        receiver = new Receiver(clientPort, this);
         this.userAddress = new InetSocketAddress(receiver.getInetAddress(), clientPort);
         this.sender = new Sender(serverAddress.getHostName(), serverAddress.getPort());
+        this.newUserListener = newUserListener;
         receiver.start();
     }
 
@@ -91,13 +93,22 @@ public class ChatClient {
     public String getUsername() {
         return username;
     }
+    public Message receive(Message message) {
+        if (message.getFromName().equals("System")) {
+            if (message.getTextMessage().contains("has joined") && newUserListener != null) {
+                newUserListener.newUser(message.getToName());
+            }
+        }
+        System.out.println(message.getFromName() + ":" + message.getTextMessage());
+        return null;
+    }
 
     public static void main(String [] args) {
 		try {
 			String serverName = args[0]; //get IP address of server from first param
 			int port = Integer.parseInt(args[1]); //get port from second param
 			int port2 = Integer.parseInt(args[2]); //get port from second param
-            ChatClient chatClient = new ChatClient(new InetSocketAddress(serverName, port), port2);
+            ChatClient chatClient = new ChatClient(new InetSocketAddress(serverName, port), port2, null);
 
             System.out.println("Enter Name: ");
 			Scanner stdin = new Scanner(System.in);

@@ -1,17 +1,17 @@
 package game.network;
 
 import chat.client.ChatClient;
+import chat.client.NewUserListener;
 import game.components.Action;
 import game.components.ActionType;
+import game.components.Character;
 import game.scene.MainGame;
+import org.newdawn.slick.SlickException;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-/**
- * Created by joseph on 11/13/16.
- */
-public class GameClient implements ReceiveStrategy {
+public class GameClient implements ReceiveStrategy, NewUserListener {
     private String name;
     private int key;
     private Sender sender;
@@ -21,7 +21,7 @@ public class GameClient implements ReceiveStrategy {
 
     public GameClient(InetSocketAddress serverAddress, int port, MainGame game) throws IOException, ClassNotFoundException {
         this.sender = new Sender(serverAddress);
-        chatClient = new ChatClient(serverAddress, port);
+        chatClient = new ChatClient(serverAddress, port, this);
         this.game = game;
         receiver = new Receiver(port, this);
         receiver.start();
@@ -35,9 +35,12 @@ public class GameClient implements ReceiveStrategy {
 
     @Override
     public void receive(Action action) {
-        switch (action.getActionType()) {
-            case MOVEMENT:
-                break;
+        if (!action.getAffectedName().equals(name)) {
+            switch (action.getActionType()) {
+                case MOVEMENT:
+                    game.movePlayer(action.getAffectedName(), action.getValue1(), action.getValue2());
+                    break;
+            }
         }
     }
 
@@ -52,4 +55,13 @@ public class GameClient implements ReceiveStrategy {
         }
     }
 
+    @Override
+    public void newUser(String name) {
+        try {
+            game.addCharacter(name, new Character(2*32, 2*32, 32, 36, "Assets/Art/rpgsprites1/warrior_f.png"));
+        } catch (SlickException e) {
+            //TODO better exception handling
+            e.printStackTrace();
+        }
+    }
 }

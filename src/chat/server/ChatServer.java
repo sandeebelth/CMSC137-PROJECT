@@ -71,7 +71,7 @@ public class ChatServer implements ReceiveStrategy {
         return new Message("Successfully logged out", "System", message.getFromName(), 0);
     }
 
-    private Message addUserProtocol(Message message) {
+    private Message addUserProtocol(Message message) throws IOException, ClassNotFoundException {
         if (userMap.containsKey(message.getFromName())) {
             return new Message("Taken Username", "System", message.getFromName(), 0);
         }
@@ -85,6 +85,8 @@ public class ChatServer implements ReceiveStrategy {
             System.out.println("Cant find class");
             return new Message("Error in server", "System", message.getFromName(), 0);
         }
+
+        broadcaster.broadcast(new Message(message.getFromName() + "has joined", "System", message.getFromName(), 0));
 
         int key = random.nextInt();
         InetSocketAddress userAddress = new InetSocketAddress(message.getTextMessage(), message.getKey());

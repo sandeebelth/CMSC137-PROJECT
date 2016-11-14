@@ -10,6 +10,7 @@ import java.util.ArrayList;
 public class Map extends TiledMap {
     private ArrayList<Rectangle> blocks = new ArrayList<>();
     private int upperLayerStart = 0;
+    private float x, y;
 
     public Map(String ref) throws SlickException {
         super(ref);
