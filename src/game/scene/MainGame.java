@@ -29,7 +29,7 @@ public class MainGame extends BasicGame {
     private Rectangle playerBox;
     private HashMap<String, Character> characterMap = new HashMap<>();
 
-    private MainGame(String gameName, InetSocketAddress serverAddress, int clientPort) throws IOException, ClassNotFoundException {
+    private MainGame(String gameName, InetSocketAddress serverAddress, int clientPort) throws IOException, ClassNotFoundException, SlickException {
         super(gameName);
         gameClient = new GameClient(serverAddress, clientPort, this);
     }
@@ -64,6 +64,7 @@ public class MainGame extends BasicGame {
         mainPlayer.move(2*32, 2*32);
 
         Character.setOrigin(centerX, centerY);
+        gameClient.getUsers();
 
     }
 
@@ -111,6 +112,10 @@ public class MainGame extends BasicGame {
             moveMap(mainPlayer.getX(), mainPlayer.getY());
             Character.setOrigin(x, y);
         }
+
+        for (Character ch : characterMap.values()) {
+            ch.updateDelta(delta);
+        }
         //Log.debug(" X: " + playerX + " Y: " + playerY);
     }
 
@@ -135,6 +140,7 @@ public class MainGame extends BasicGame {
         Log.debug("added " + name);
     }
 
+
     public static void main(String[] args) {
         if (args.length < 1 || (args[0].equals("server") && args.length < 3) ||
                 (args[0].equals("client") && args.length < 4)) {
@@ -156,7 +162,8 @@ public class MainGame extends BasicGame {
 
         try {
             AppGameContainer appgc;
-            appgc = new AppGameContainer(new MainGame("Simple Slick Game", serverAddress, clientPort));
+            MainGame game = new MainGame("Simple Slick Game", serverAddress, clientPort);
+            appgc = new AppGameContainer(game);
             appgc.setDisplayMode(640, 480, false);
             appgc.start();
         } catch (SlickException ex) {

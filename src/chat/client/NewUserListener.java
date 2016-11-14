@@ -1,5 +1,5 @@
 package chat.client;
 
-public interface NewUserListener {
-    void newUser(String name);
+public interface NewUserListener<T> {
+    void newUser(T name);
 }

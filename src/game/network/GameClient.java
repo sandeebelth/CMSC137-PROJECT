@@ -11,7 +11,7 @@ import org.newdawn.slick.SlickException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-public class GameClient implements ReceiveStrategy, NewUserListener {
+public class GameClient implements ReceiveStrategy, NewUserListener<String> {
     private String name;
     private int key;
     private Sender sender;
@@ -19,18 +19,29 @@ public class GameClient implements ReceiveStrategy, NewUserListener {
     private MainGame game;
     private ChatClient chatClient;
 
-    public GameClient(InetSocketAddress serverAddress, int port, MainGame game) throws IOException, ClassNotFoundException {
+    public GameClient(InetSocketAddress serverAddress, int port, MainGame game) throws IOException, ClassNotFoundException, SlickException {
         this.sender = new Sender(serverAddress);
         chatClient = new ChatClient(serverAddress, port, this);
         this.game = game;
         receiver = new Receiver(port, this);
         receiver.start();
+        //TODO retrieve player list upon login
         if (!chatClient.connectToServer(Integer.toString(port))) {
             //TODO add better error handling
             throw new IOException("Unable to connect using name");
         }
         name = chatClient.getUsername();
         key = chatClient.getKey();
+    }
+
+    public void getUsers() throws SlickException {
+        String userNames = chatClient.getUserList();
+        if (userNames.length() == 0) {
+            return;
+        }
+        for(String userName: userNames.split(",")) {
+            game.addCharacter(userName, new Character(2*32, 2*32, 32, 36, "Assets/Art/rpgsprites1/warrior_f.png"));
+        }
     }
 
     @Override

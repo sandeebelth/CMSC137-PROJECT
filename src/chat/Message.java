@@ -6,6 +6,7 @@ public class Message implements Serializable {
 	private String textMessage;
 	private String fromName;
 	private String toName;
+	private String address;
 	private int key;
 
 	public Message(String textMessage, String fromName, String toName, int key) {
@@ -25,6 +26,14 @@ public class Message implements Serializable {
 
 	public String getToName() {
 		return toName;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	public String getAddress() {
+		return address;
 	}
 
 	public int getKey() {

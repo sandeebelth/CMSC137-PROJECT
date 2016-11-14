@@ -1,9 +1,12 @@
 package chat;
 
-import java.net.*;
-import java.io.*;
-
-import chat.Message;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 public class Receiver extends Thread {
 	private ServerSocket serverSocket;
@@ -30,6 +33,7 @@ public class Receiver extends Thread {
 				Message sendMessage;
 				//System.out.println("Receiver Message Wait!");
 				Message receivedMessage = (Message)ois.readObject();
+				receivedMessage.setAddress(server.getRemoteSocketAddress().toString().split(":")[0].substring(1));
 				sendMessage = receive.receive(receivedMessage);
 				//System.out.println("Received Message!");
 				if(sendMessage != null) {

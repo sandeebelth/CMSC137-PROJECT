@@ -21,7 +21,7 @@ public class ChatClient implements chat.ReceiveStrategy {
     private NewUserListener newUserListener;
     private boolean connected = false;
 
-	public ChatClient(InetSocketAddress serverAddress, int clientPort, NewUserListener newUserListener)
+	public ChatClient(InetSocketAddress serverAddress, int clientPort, NewUserListener<String> newUserListener)
             throws ClassNotFoundException, IOException {
         this.serverAddress = serverAddress;
         receiver = new Receiver(clientPort, this);
@@ -84,6 +84,32 @@ public class ChatClient implements chat.ReceiveStrategy {
 
     public boolean isConnected() {
         return connected;
+    }
+
+    public String getUserList() {
+        Message message = new Message("", username, "#USERLIST", key);
+
+        Socket client = null;
+        try {
+            client = new Socket(serverAddress.getAddress(), serverAddress.getPort());
+            /* Send data to the ServerSocket */
+            ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
+            ObjectInputStream ois = new ObjectInputStream(client.getInputStream());
+            oos.writeObject(message);
+
+            Message reply = (Message)ois.readObject();
+
+            oos.close();
+            ois.close();
+            client.close();
+            return reply.getTextMessage();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return "";
+
     }
 
     public int getKey() {

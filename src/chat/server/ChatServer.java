@@ -44,6 +44,8 @@ public class ChatServer implements ReceiveStrategy {
                 case "#ALL":
                     broadcaster.broadcast(message);
                     break;
+                case "#USERLIST":
+                    return getUserListString(message);
                 case "#LOGOUT":
                     return removeUser(message);
             }
@@ -57,6 +59,18 @@ public class ChatServer implements ReceiveStrategy {
         }
         System.out.println("Done message!");
         return null;
+    }
+
+    private Message getUserListString(Message message) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for(Client c: userMap.values()) {
+            if (c.getName().equals(message.getFromName())) {
+                continue;
+            }
+            stringBuilder.append(c.getName());
+            stringBuilder.append(",");
+        }
+        return new Message(stringBuilder.toString(), "System", message.getFromName(), 0);
     }
 
     private Message removeUser(Message message) throws IOException, ClassNotFoundException {
@@ -77,7 +91,7 @@ public class ChatServer implements ReceiveStrategy {
         }
 
         try {
-            Sender.send(message.getTextMessage(), message.getKey(), new Message("TEST", "#SYS", "#SYS", 0));
+            Sender.send(message.getAddress(), message.getKey(), new Message("TEST", "#SYS", "#SYS", 0));
         } catch(IOException e) {
             System.out.println("Cannot find GameServer");
             return new Message("Invalid Receive Address", "System", message.getFromName(), 0);
@@ -89,7 +103,7 @@ public class ChatServer implements ReceiveStrategy {
         broadcaster.broadcast(new Message(message.getFromName() + "has joined", "System", message.getFromName(), 0));
 
         int key = random.nextInt();
-        InetSocketAddress userAddress = new InetSocketAddress(message.getTextMessage(), message.getKey());
+        InetSocketAddress userAddress = new InetSocketAddress(message.getAddress(), message.getKey());
         userMap.put(message.getFromName(), new Client(message.getFromName(), key, userAddress));
         broadcaster.addAddress(userAddress);
         System.out.println("Accepting User");

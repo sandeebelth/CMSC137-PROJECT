@@ -15,6 +15,8 @@ public class Character {
     private final int MOVEMENT_FRAME_COUNT = 3;
     private static float screenOriginX, screenOriginY;
 
+    private String name;
+    private int direction;
     private Rectangle hitBox;
     private float x, y;
     private SpriteSheet characterSprite;
@@ -27,7 +29,7 @@ public class Character {
         hitBox = new Rectangle(x, y, width, height);
 
         Image[] holder;
-        int[] duration = {300, 300, 300};
+        int[] duration = {175, 175, 175};
         for (int ii = 0; ii < DIRECTION_COUNT; ii++) {
             holder = new Image[MOVEMENT_FRAME_COUNT];
             for (int jj = 0; jj < MOVEMENT_FRAME_COUNT; jj++) {
@@ -37,6 +39,7 @@ public class Character {
         }
 
         sprite = movements[RIGHT];
+        direction = RIGHT;
 
         this.x = x;
         this.y = y;
@@ -48,16 +51,21 @@ public class Character {
 
     public void setMovementDirection(int direction) {
         sprite = movements[direction];
+        this.direction = direction;
     }
 
     public void move(float x, float y) {
         this.x += x;
         this.y += y;
+        this.hitBox.setX(this.x);
+        this.hitBox.setY(this.y);
     }
 
     public void setCoordinate(float x, float y) {
         this.x = x;
         this.y = y;
+        this.hitBox.setX(this.x);
+        this.hitBox.setY(this.y);
     }
 
     public Rectangle getHitBox() {
@@ -83,5 +91,9 @@ public class Character {
 
     public void draw(float x, float y) {
         sprite.draw(x, y);
+    }
+
+    public CharacterState getState() {
+        return new CharacterState(name, x, y, direction);
     }
 }
