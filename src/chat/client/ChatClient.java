@@ -3,6 +3,7 @@ package chat.client;
 import chat.Message;
 import chat.Receiver;
 import chat.Sender;
+import game.network.MessageListener;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -19,15 +20,18 @@ public class ChatClient implements chat.ReceiveStrategy {
     private Sender sender;
     private Receiver receiver;
     private NewUserListener newUserListener;
+    private MessageListener messageListener;
     private boolean connected = false;
 
-	public ChatClient(InetSocketAddress serverAddress, int clientPort, NewUserListener<String> newUserListener)
+	public ChatClient(InetSocketAddress serverAddress, int clientPort,
+                      NewUserListener<String> newUserListener, MessageListener messageListener)
             throws ClassNotFoundException, IOException {
         this.serverAddress = serverAddress;
         receiver = new Receiver(clientPort, this);
         this.userAddress = new InetSocketAddress(receiver.getInetAddress(), clientPort);
         this.sender = new Sender(serverAddress.getHostName(), serverAddress.getPort());
         this.newUserListener = newUserListener;
+        this.messageListener = messageListener;
         receiver.start();
     }
 
@@ -79,7 +83,6 @@ public class ChatClient implements chat.ReceiveStrategy {
 
     public void sendMessage(String toName, String text) throws IOException, ClassNotFoundException {
         sender.send(new Message(text, username, toName, key));
-        receiver.close();
     }
 
     public boolean isConnected() {
@@ -125,6 +128,8 @@ public class ChatClient implements chat.ReceiveStrategy {
                 newUserListener.newUser(message.getToName());
             }
         }
+
+        messageListener.newMessage(message);
         System.out.println(message.getFromName() + ":" + message.getTextMessage());
         return null;
     }
@@ -134,7 +139,7 @@ public class ChatClient implements chat.ReceiveStrategy {
 			String serverName = args[0]; //get IP address of server from first param
 			int port = Integer.parseInt(args[1]); //get port from second param
 			int port2 = Integer.parseInt(args[2]); //get port from second param
-            ChatClient chatClient = new ChatClient(new InetSocketAddress(serverName, port), port2, null);
+            ChatClient chatClient = new ChatClient(new InetSocketAddress(serverName, port), port2, null, null);
 
             System.out.println("Enter Name: ");
 			Scanner stdin = new Scanner(System.in);

@@ -36,7 +36,7 @@ public class ChatServer implements ReceiveStrategy {
     }
 
     public Message receive(Message message) {
-        System.out.println("New message!");
+        System.out.println("New message!" + message.getTextMessage() + "!");
         try {
             switch(message.getToName()) {
                 case "#ADD":

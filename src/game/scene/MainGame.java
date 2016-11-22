@@ -6,14 +6,17 @@ import game.components.Map;
 import game.network.GameClient;
 import game.network.GameServer;
 import org.newdawn.slick.*;
+import org.newdawn.slick.font.effects.ColorEffect;
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.geom.ShapeRenderer;
+import org.newdawn.slick.gui.TextField;
 import org.newdawn.slick.util.Log;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,12 +31,23 @@ public class MainGame extends BasicGame {
     //TODO find way to decouple playerBox
     private Rectangle playerBox;
     private HashMap<String, Character> characterMap = new HashMap<>();
+    private UnicodeFont font;
+    private TextField textField;
+    private LinkedList<String> messages = new LinkedList<>();
 
     private MainGame(String gameName, InetSocketAddress serverAddress, int clientPort) throws IOException, ClassNotFoundException, SlickException {
         super(gameName);
         gameClient = new GameClient(serverAddress, clientPort, this);
     }
 
+
+    public void newMessage(String message) {
+        messages.addFirst(message);
+        if (messages.size() == 6) {
+            messages.removeLast();
+        }
+        return;
+    }
     private void moveMap(float x, float y) {
         this.x = centerX - x;
         this.y = centerY - y;
@@ -66,6 +80,12 @@ public class MainGame extends BasicGame {
         Character.setOrigin(centerX, centerY);
         gameClient.getUsers();
 
+        font = new UnicodeFont("arial.ttf", 15, false, false);
+        textField = new TextField(gc, font, 0, gc.getHeight() - 30, 300, 50);
+
+        font.addAsciiGlyphs();
+        font.getEffects().add(new ColorEffect(java.awt.Color.white));
+        gc.setDefaultFont(font);
     }
 
     @Override
@@ -91,6 +111,12 @@ public class MainGame extends BasicGame {
             mainPlayer.setMovementDirection(Character.RIGHT);
             mainPlayer.updateDelta(delta);
             dX -= delta * 0.1f;
+        } else if (input.isKeyDown(Input.KEY_ENTER)) {
+            String toSend = textField.getText();
+            if (toSend.length() > 0) {
+                gameClient.sendMessage(toSend);
+                textField.setText("");
+            }
         }
         playerBox.setX(playerX - dX);
         playerBox.setY(playerY - dY);
@@ -117,17 +143,26 @@ public class MainGame extends BasicGame {
             ch.updateDelta(delta);
         }
         //Log.debug(" X: " + playerX + " Y: " + playerY);
+
+        font.loadGlyphs();
     }
 
     @Override
     public void render(GameContainer gc, Graphics g) throws SlickException {
+        g.setFont(font);
         testMap.renderBottom((int) x, (int) y);
         mainPlayer.draw(gc.getWidth() / 2, gc.getHeight() / 2);
         testMap.renderUpper((int)x, (int)y);
-        g.drawString("Howdy!", 20, 20);
+        g.setColor(Color.white);
+        textField.render(gc, g);
+        for(int ii = 0; ii < 5 && ii < messages.size(); ii++) {
+            g.drawString(messages.get(ii), 20, gc.getHeight() - ii*30 - 60);
+        }
 
         ShapeRenderer.draw(playerBox);
+        g.setColor(Color.blue);
         collisions.forEach(ShapeRenderer::draw);
+        g.setColor(Color.red);
         for(Character ch : characterMap.values()) {
             ch.draw();
             ShapeRenderer.draw(ch.getHitBox());

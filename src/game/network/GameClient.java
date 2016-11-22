@@ -1,5 +1,6 @@
 package game.network;
 
+import chat.Message;
 import chat.client.ChatClient;
 import chat.client.NewUserListener;
 import game.components.Action;
@@ -11,7 +12,7 @@ import org.newdawn.slick.SlickException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-public class GameClient implements ReceiveStrategy, NewUserListener<String> {
+public class GameClient implements ReceiveStrategy, NewUserListener<String>, MessageListener {
     private String name;
     private int key;
     private Sender sender;
@@ -21,7 +22,7 @@ public class GameClient implements ReceiveStrategy, NewUserListener<String> {
 
     public GameClient(InetSocketAddress serverAddress, int port, MainGame game) throws IOException, ClassNotFoundException, SlickException {
         this.sender = new Sender(serverAddress);
-        chatClient = new ChatClient(serverAddress, port, this);
+        chatClient = new ChatClient(serverAddress, port, this, this);
         this.game = game;
         receiver = new Receiver(port, this);
         receiver.start();
@@ -74,5 +75,23 @@ public class GameClient implements ReceiveStrategy, NewUserListener<String> {
             //TODO better exception handling
             e.printStackTrace();
         }
+    }
+
+    public boolean sendMessage(String text) {
+        try {
+            chatClient.sendMessage("#ALL", text);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    @Override
+    public void newMessage(Message message) {
+        game.newMessage(message.getFromName() + ":" + message.getTextMessage());
     }
 }
